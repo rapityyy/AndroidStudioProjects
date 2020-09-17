@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:quizz_app/quiz_brain.dart';
+import 'quiz_brain.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+QuizBrain quizBrain = QuizBrain();
 
 void main() => runApp(Quizzler());
 
@@ -27,17 +32,33 @@ class QuizPage extends StatefulWidget {
 class _QuizPageState extends State<QuizPage> {
   //Variables
   List<Icon> scoreKeeper = [];
-  List<String> questions = [
-    'You can lead a cow down stairs but not up stairs.', //false
-    'Approximately one quarter of human bones are in the feet.', //true
-    'A slug\'s blood is green.' //true
-  ];
 
-  List<bool> answer = [
-    false,
-    true,
-    true,
-  ];
+  void checkAnswer(bool value) {
+    if (quizBrain.overSized()) {
+      setState(() {
+        //display alert box
+        Alert(
+                context: context,
+                title: "Congratulation",
+                desc: "You've finished the quiz!")
+            .show();
+        //reset qNum
+        quizBrain.setQNum(0);
+        //empty scoreKeeper
+        scoreKeeper.clear();
+      });
+    } else {
+      setState(() {
+        if (quizBrain.getQuestionAnswer() == value) {
+          scoreKeeper.add(Icon(Icons.check, color: Colors.green));
+        } else {
+          scoreKeeper.add(Icon(Icons.close, color: Colors.red));
+        }
+        quizBrain.nextQuestion();
+      });
+    }
+  }
+
   int qNum = 0;
 
   @override
@@ -52,7 +73,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                questions[qNum],
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25.0,
@@ -77,17 +98,7 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked true.
-                //bool correctAns = answer[qNum];
-                if (answer[qNum] == true) {
-                  setState(() {
-                    scoreKeeper.add(Icon(Icons.check, color: Colors.green));
-                  });
-                } else {
-                  setState(() {
-                    scoreKeeper.add(Icon(Icons.close, color: Colors.red));
-                  });
-                }
-                qNum++;
+                checkAnswer(true);
               },
             ),
           ),
@@ -106,16 +117,7 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 //The user picked false.
-                if (answer[qNum] == false) {
-                  setState(() {
-                    scoreKeeper.add(Icon(Icons.check, color: Colors.green));
-                  });
-                } else {
-                  setState(() {
-                    scoreKeeper.add(Icon(Icons.close, color: Colors.red));
-                  });
-                  qNum++;
-                }
+                checkAnswer(false);
               },
             ),
           ),
